@@ -348,20 +348,21 @@ class manager {
                 'lifetime' => 0,
                 'path' => $CFG->sessioncookiepath,
                 'domain' => $CFG->sessioncookiedomain,
-                'secure' => $cookiesecure,
+                'secure' => true,
                 'httponly' => $CFG->cookiehttponly,
+                'samesite' => 'None'
             ];
 
-            if (self::should_use_samesite_none()) {
-                // If $samesite is empty, we don't want there to be any SameSite attribute.
-                $sessionoptions['samesite'] = 'None';
-            }
+            // if (self::should_use_samesite_none()) {
+            //     // If $samesite is empty, we don't want there to be any SameSite attribute.
+            //     $sessionoptions['samesite'] = 'aaaaaaaa';
+            // }
 
             session_set_cookie_params($sessionoptions);
         } else {
             // Once PHP 7.3 becomes our minimum, drop this in favour of the alternative call to session_set_cookie_params above,
             // as that does not require a hack to work with same site settings on cookies.
-            session_set_cookie_params(0, $CFG->sessioncookiepath, $CFG->sessioncookiedomain, $cookiesecure, $CFG->cookiehttponly);
+            session_set_cookie_params(0, $CFG->sessioncookiepath, $CFG->sessioncookiedomain, $cookiesecure, $CFG->cookiehttponly,'None');
         }
         ini_set('session.use_trans_sid', '0');
         ini_set('session.use_only_cookies', '1');

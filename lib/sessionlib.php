@@ -130,11 +130,11 @@ function set_moodle_cookie($username) {
     $cookiesecure = is_moodle_cookie_secure();
 
     // Delete old cookie.
-    setcookie($cookiename, '', time() - HOURSECS, $CFG->sessioncookiepath, $CFG->sessioncookiedomain, $cookiesecure, $CFG->cookiehttponly);
+    setcookie($cookiename, '', time() - HOURSECS, $CFG->sessioncookiepath, $CFG->sessioncookiedomain, true, true,'None');
 
     if ($username !== '') {
         // Set username cookie for 60 days.
-        setcookie($cookiename, rc4encrypt($username), time() + (DAYSECS * 60), $CFG->sessioncookiepath, $CFG->sessioncookiedomain, $cookiesecure, $CFG->cookiehttponly);
+        setcookie($cookiename, rc4encrypt($username), time() + (DAYSECS * 60), $CFG->sessioncookiepath, $CFG->sessioncookiedomain, true, true, 'None');
     }
 }
 

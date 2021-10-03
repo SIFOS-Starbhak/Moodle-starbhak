@@ -62,22 +62,15 @@ foreach($authsequence as $authname) {
 
     
 require_logout();
-
-switch ($_COOKIE["token_cookies"]) {
-    case 'apiSiswa':
-        redirect("http://localhost:8000/siswa/dashboard?token={$_COOKIE['user_token']}"); // redirect to dashboard 
-        unset($_COOKIE["token_cookies"]);
-        unset($_COOKIE["user_token"]);
+switch ($_COOKIE["role_cookies"]) {
+    case 'siswa':
+        redirect("http://127.0.0.1:8000/siswa/dashboard"); // redirect to dashboard (sesuai sma url website nya untuk domain nya)
         break;
-    case 'apiGuru':
-        redirect("http://localhost:8000/guru/dashboard?token={$_COOKIE['user_token']}"); // redirect to dashboard 
-        unset($_COOKIE["token_cookies"]);
-        unset($_COOKIE["user_token"]);
+    case 'guru':
+        redirect("http://127.0.0.1:8000/guru/dashboard"); // redirect to dashboard      
         break;
-    case 'apiManager':
-        redirect("http://localhost:8000/manager/dashboard?token={$_COOKIE['user_token']}"); // redirect to dashboard 
-        unset($_COOKIE["token_cookies"]);
-        unset($_COOKIE["user_token"]);
+    case 'manager':
+        redirect("http://127.0.0.1:8000/manager/dashboard"); // redirect to dashboard 
         break;
     default:
         # code...

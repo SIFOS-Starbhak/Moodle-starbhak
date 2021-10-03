@@ -2,9 +2,9 @@
 
 use Firebase\JWT\JWT;
 
-header('Access-Control-Allow-Origin: http://localhost:8000');
+header('Access-Control-Allow-Origin: http://127.0.0.1:8000');
 header('Access-Control-Allow-Methods: *');
-header('Access-Control-Allow-Headers: Content-Type, x-xsrf-token');
+header('Access-Control-Allow-Headers: content-type,x-xsrf-token,x-requested-with');
 header('Access-Control-Allow-Credentials: true');
 
 // This file is part of Moodle - http://moodle.org/
@@ -143,46 +143,75 @@ if ($user !== false or $frm !== false or $errormsg !== '') {
 //     redirect("/url");
 // }
 // get token login
-if (isset($_POST["token"])) { // login with jwt
-
+if (isset($_GET["token"])) { // jika da ge token
     global $DB; // ambil variable global
+
+    $ch = curl_init(); // curl post ke web sekolah
+    curl_setopt_array(
+        $ch,
+        array(
+            CURLOPT_URL => 'http://127.0.0.1:8000/api/me', // seusai sama url 
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => array(
+                "X-Requested-With: XMLHttpRequest",
+                'Authorization: Bearer ' . $_GET["token"],
+            ),
+        )
+    );
+    // Send the request 
+    $response = curl_exec($ch); // get reponse
+
+    // Check for errors 
+    if ($response === false) {
+        die(curl_error($ch));
+    }
+    // Close the cURL handler 
+    curl_close($ch);;
+    // Print the date from the response 
+    $api_res = json_decode($response, true);  // decode response dari json ke arrau
+
+    
+  
     //$_SESSION['token'] = $_POST["token"];
-    $jwt_token = JWT::decode($_POST["token"], "1342423424324324234", array('HS256')); // decode token
-    setcookie("token_cookies", $jwt_token->role, time() + (86400 * 30), "/"); // 86400 = 1 day
-    setcookie("user_token", $jwt_token->token, time() + (86400 * 30), "/"); // 86400 = 1 day
- 
+    $jwt_token = JWT::decode($api_res['token'], "1342423424324324234", array('HS256')); // decode token
+    setcookie("role_cookies", $jwt_token->auth->role, time() + (86400 * 30), "/"); // 86400 = 1 day
     $jwt_token->username  =  trim(core_text::strtolower($jwt_token->auth->username));
     $jwt_token->password = $jwt_token->auth->password;
     $user = authenticate_user_login($jwt_token->username, $jwt_token->password, false); // get autenticate 
+    
     // $jwt_token->username = trim(core_text::strtolower($jwt_token->username)); // get username token
-   
-    // unsiggn all role()
- 
-    // cek role 
-    switch ($jwt_token->role) {
-        case 'apiSiswa':
+
+    // cek role ;
+    switch ($jwt_token->auth->role) {
+        case 'siswa':
             $id_role = $DB->get_field('role', 'id', ['shortname' => 'student']); // siswa
             break;
-        case 'apiGuru':
+        case 'guru':
             $id_role = $DB->get_field('role', 'id', ['shortname' => 'editingteacher']); // guru
             break;
-        case 'apiManager':
+        case 'manager':
             $id_role = $DB->get_field('role', 'id', ['shortname' => 'manager']); // manager
             break;
         default:
             # code...
             break;
     }
-
+    
     $context = context_system::instance();  // before login update data if exist
+    if ($jwt_token->role === "siswa") {
+        $lastname = $jwt_token->kelas->nama_kelas;
+    }else{
+        $lastname = $jwt_token->user->jabatan_guru;
+    }
     if ($user) { // if have user
-
-        $user_id = $DB->get_field('user', 'id', ["username" => $jwt_token->username]);
-        $upduser = new stdClass();
-        $upduser->id = $user_id;
-        $upduser->password = hash_internal_user_password($jwt_token->password);
-        $DB->update_record('user', $upduser);
-        $id_user = $DB->get_field('user', 'id', ['username' => trim(core_text::strtolower($jwt_token->username))]);
+        $user_id = $DB->get_field('user', 'id', ['username' => trim(core_text::strtolower($jwt_token->username))]); // mencari id
+        $upduser = new stdClass(); // ngambil std class untuk update datz
+        $upduser->id = $user_id; // where id = user_id
+        $upduser->firstname  = $jwt_token->user->name;
+        $upduser->lastname = $lastname;
+        $upduser->password = hash_internal_user_password($jwt_token->password); // set data
+        $DB->update_record('user', $upduser); // update data
+        $id_user = $DB->get_field('user', 'id', ['username' => trim(core_text::strtolower($jwt_token->username))    ]);
         role_unassign_all(array('userid' => $id_user));
         role_assign($id_role, $id_user, $context);
 
@@ -192,14 +221,13 @@ if (isset($_POST["token"])) { // login with jwt
         }
         /// Let's get them all set up.
         complete_user_login($user);
-       
+        
         ///core\session\manager::apply_concusssrrent_login_limit($user->id, session_id());
         // sets the username cookie
         if (!empty($CFG->nolastloggedin)) {
             // do not store last logged in user in cookie
             // auth plugins can temporarily override this from loginpage_hook()
             // do not save $CFG->nolastloggedin in database!
-
         } else if (empty($CFG->rememberusername) or ($CFG->rememberusername == 2 and empty($jwt_token->rememberusername))) {
             // no permanent cookies, delete old one if exists
             set_moodle_cookie('');
@@ -207,12 +235,14 @@ if (isset($_POST["token"])) { // login with jwt
             set_moodle_cookie($USER->username);
         }
         $urltogo = core_login_get_return_url(); // rpute login 
-
         // Discard any errors before the last redirect.
         unset($SESSION->loginerrormsg);
 
         // test the session actually works by redirecting to self
+
         $SESSION->wantsurl = $urltogo;
+
+        redirect('http://localhost/moddle/moodle/my/');
         
     } else { // jika tidak ada
         // nyari user
@@ -220,6 +250,8 @@ if (isset($_POST["token"])) { // login with jwt
         if (!empty($user_id)) {
             $upduser = new stdClass();
             $upduser->id = $user_id;
+            $upduser->firstname  = $jwt_token->user->name;
+            $upduser->lastname = $lastname;
             $upduser->password = hash_internal_user_password($jwt_token->password);
             $DB->update_record('user', $upduser);
             $id_user = $DB->get_field('user', 'id', ['username' => trim(core_text::strtolower($jwt_token->username))]);
@@ -232,8 +264,8 @@ if (isset($_POST["token"])) { // login with jwt
             $user->email      = strtolower('email'); //MOODLE requires lowercase
             $user->username   = trim(core_text::strtolower($jwt_token->username));
             $user->password   = hash_internal_user_password($jwt_token->password);
-            $user->lastname   = 'lastname';
-            $user->firstname  = $jwt_token->username;
+            $user->lastname   = $lastname;
+            $user->firstname  = $jwt_token->user->name;
             // These values are required. 
             // Default values are stored in moodle config files but... this is easier.
             $user->auth       = 'manual';
@@ -246,7 +278,7 @@ if (isset($_POST["token"])) { // login with jwt
             $DB->insert_record('user', $user); // returns new userid
             $userid = $DB->get_field('user', 'id', ['username' => trim(core_text::strtolower($jwt_token->username))]);
             $context = context_system::instance();
-            role_assign($role, $userid, $context);
+            role_assign($id_role, $userid, $context);
                      // role_id, user_id, context
         }
         $user = authenticate_user_login($jwt_token->username, $jwt_token->password, false); // get autenticate 
@@ -276,14 +308,10 @@ if (isset($_POST["token"])) { // login with jwt
 
         // test the session actually works by redirecting to self
         $SESSION->wantsurl = $urltogo;
+        redirect('http://localhost/moddle/moodle/my/'); // ubah redirect
         // echo json_encode(['succes' => true, 'code' => 200]);
         // die;
     }
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['succes' => true, 'code' => $user]);
-    die;  
-}else{
-    require_logout();
 }
 
 if ($anchor && isset($SESSION->wantsurl) && strpos($SESSION->wantsurl, '#') === false) {
