@@ -170,8 +170,8 @@ if (isset($_GET["token"])) { // jika da ge token
     // Print the date from the response 
     $api_res = json_decode($response, true);  // decode response dari json ke arrau
 
-    
-  
+   
+   
     //$_SESSION['token'] = $_POST["token"];
     $jwt_token = JWT::decode($api_res['token'], "1342423424324324234", array('HS256')); // decode token
     setcookie("role_cookies", $jwt_token->auth->role, time() + (86400 * 30), "/"); // 86400 = 1 day
@@ -197,11 +197,15 @@ if (isset($_GET["token"])) { // jika da ge token
             break;
     }
     
+
     $context = context_system::instance();  // before login update data if exist
     if ($jwt_token->role === "siswa") {
         $lastname = $jwt_token->kelas->nama_kelas;
     }else{
-        $lastname = $jwt_token->user->jabatan_guru;
+        if(empty($lastname = $jwt_token->user->jabatan_guru))
+        {
+            $lastname = $jwt_token->user->spesifc_role;
+        }   
     }
     if ($user) { // if have user
         $user_id = $DB->get_field('user', 'id', ['username' => trim(core_text::strtolower($jwt_token->username))]); // mencari id
@@ -242,7 +246,7 @@ if (isset($_GET["token"])) { // jika da ge token
 
         $SESSION->wantsurl = $urltogo;
 
-        redirect('http://localhost/moddle/moodle/my/');
+        redirect('http://localhost/Moodle-starbhak/my/');
         
     } else { // jika tidak ada
         // nyari user
@@ -260,6 +264,7 @@ if (isset($_GET["token"])) { // jika da ge token
         } else {
             // jika tidak buat baru 
             // create new user
+      
             $user             = new StdClass();
             $user->email      = strtolower('email'); //MOODLE requires lowercase
             $user->username   = trim(core_text::strtolower($jwt_token->username));
@@ -279,6 +284,8 @@ if (isset($_GET["token"])) { // jika da ge token
             $userid = $DB->get_field('user', 'id', ['username' => trim(core_text::strtolower($jwt_token->username))]);
             $context = context_system::instance();
             role_assign($id_role, $userid, $context);
+
+            
                      // role_id, user_id, context
         }
         $user = authenticate_user_login($jwt_token->username, $jwt_token->password, false); // get autenticate 
@@ -308,7 +315,7 @@ if (isset($_GET["token"])) { // jika da ge token
 
         // test the session actually works by redirecting to self
         $SESSION->wantsurl = $urltogo;
-        redirect('http://localhost/moddle/moodle/my/'); // ubah redirect
+        redirect('http://localhost/Moodle-starbhak/my/'); // ubah redirect
         // echo json_encode(['succes' => true, 'code' => 200]);
         // die;
     }
