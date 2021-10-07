@@ -1,0 +1,3 @@
+a:5:{s:13:"fallbackaudio";s:12:"Tautan audio";s:13:"fallbackvideo";s:12:"Tautan video";s:10:"filtername";s:18:"Pengaya multimedia";s:11:"linktomedia";s:320:"Filter plugin multimedia menemukan tautan dalam teks yang menunjuk ke sumber daya multimedia dan mengganti tautan dengan kode pemutar multimedia yang sesuai yang dapat memutar sumber daya. Itu juga menggantikan tag <video> dan <audio> dengan pemutar video dan audio yang dipilih.
+
+<a href="{$a}">Manage media players</a>";s:16:"privacy:metadata";s:56:"Pengaya multimedia tidak menyimpan data pribadi apa pun.";}

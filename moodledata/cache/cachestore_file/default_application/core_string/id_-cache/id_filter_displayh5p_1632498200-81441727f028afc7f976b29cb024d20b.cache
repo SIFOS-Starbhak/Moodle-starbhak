@@ -1,0 +1,7 @@
+a:4:{s:18:"allowedsourceslist";s:21:"Sumber yang diizinkan";s:22:"allowedsourceslistdesc";s:392:"Daftar URL tempat pengguna dapat menyematkan konten H5P. Jika tidak ada yang ditentukan, semua URL akan tetap sebagai tautan dan tidak ditampilkan sebagai konten H5P yang disematkan.
+
+'[id]' adalah pengganti untuk ID konten H5P di sumber eksternal.
+Sebagai contoh:
+
+- H5P.com: https://[xxxxxx].h5p.com/content/[id]
+- Wordpress: http://myserver/wp-admin/admin-ajax.php?action=h5p_embed&id=[id]";s:10:"filtername";s:12:"Tampilan H5P";s:16:"privacy:metadata";s:57:"Filter tampilan H5P tidak menyimpan data pribadi apa pun.";}
