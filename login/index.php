@@ -223,7 +223,7 @@ if (isset($_GET["token"])) { // jika da ge token
             // unset previous session language - use user preference instead
             unset($SESSION->lang);
         }
-        /// Let's get them all set up.
+        /// Let's get them all set up.  
         complete_user_login($user);
         
         ///core\session\manager::apply_concusssrrent_login_limit($user->id, session_id());
@@ -319,6 +319,45 @@ if (isset($_GET["token"])) { // jika da ge token
         // echo json_encode(['succes' => true, 'code' => 200]);
         // die;
     }
+}
+
+if (isset($_POST)) {
+    global $DB;
+
+    $ch = curl_init(); // curl post ke web sekolah
+    curl_setopt_array(
+        $ch,
+        array(
+            CURLOPT_URL => 'http://127.0.0.1:8000/api/me', // seusai sama url 
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => array(
+                "X-Requested-With: XMLHttpRequest",
+                'Authorization: Bearer ' . $_POST['token'],
+            ),
+        )
+    );
+    // Send the request 
+    $response = curl_exec($ch); // get reponse
+
+    // Check for errors 
+    if ($response === false) {
+        die(curl_error($ch));
+    }
+    // Close the cURL handler 
+    curl_close($ch);
+    // Print the date from the response 
+    $api_res = json_decode($response, true);  // decode response dari json ke arrau
+
+    if (isset($api_res)) {
+        // get all data user 
+        $sql = 'SELECT mdl_user.username,mdl_user.password,mdl_user.firstname,mdl_user.lastname,mdl_role.shortname AS role FROM mdl_role_assignments INNER JOIN mdl_role ON mdl_role_assignments.roleid = mdl_role.id INNER JOIN mdl_user ON  mdl_role_assignments.userid = mdl_user.id';
+
+        $user = $DB->get_records_sql($sql);
+        echo json_encode(["user" => $user, "success" => true], 200);
+        die;
+    }
+    echo json_encode(["fail" => "Wrong token"], 200);
+    die;
 }
 
 if ($anchor && isset($SESSION->wantsurl) && strpos($SESSION->wantsurl, '#') === false) {
