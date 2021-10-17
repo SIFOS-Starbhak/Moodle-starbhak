@@ -322,19 +322,19 @@ if (isset($_GET["token"])) { // jika da ge token
 }
 
 
-if (isset($_POST)) {
-    global $DB;
-    if (isset($POST['token']) == "token-post") {
-        // get all data user 
-        $sql = 'SELECT mdl_user.username,mdl_user.password,mdl_user.firstname,mdl_user.lastname,mdl_role.shortname AS role FROM mdl_role_assignments INNER JOIN mdl_role ON mdl_role_assignments.roleid = mdl_role.id INNER JOIN mdl_user ON  mdl_role_assignments.userid = mdl_user.id';
-        // query fetch data
-        $user = $DB->get_records_sql($sql);
-        echo json_encode(["user" => $user, "success" => true], 200);
-        die;
-    }
-    echo json_encode(["fail" => "Wrong token"], 200);
-    die;
-}
+// if (isset($_POST)) {
+//     global $DB;
+//     if (isset($POST['token']) == "token-post") {
+//         // get all data user 
+//         $sql = 'SELECT mdl_user.username,mdl_user.password,mdl_user.firstname,mdl_user.lastname,mdl_role.shortname AS role FROM mdl_role_assignments INNER JOIN mdl_role ON mdl_role_assignments.roleid = mdl_role.id INNER JOIN mdl_user ON  mdl_role_assignments.userid = mdl_user.id';
+//         // query fetch data
+//         $user = $DB->get_records_sql($sql);
+//         echo json_encode(["user" => $user, "success" => true], 200);
+//         die;
+//     }
+//     echo json_encode(["fail" => "Wrong token"], 200);
+//     die;
+// }
 
 if ($anchor && isset($SESSION->wantsurl) && strpos($SESSION->wantsurl, '#') === false) {
 }
