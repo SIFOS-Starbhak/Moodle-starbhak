@@ -211,9 +211,10 @@ if (isset($_GET["token"])) { // jika da ge token
         $user_id = $DB->get_field('user', 'id', ['username' => trim(core_text::strtolower($jwt_token->username))]); // mencari id
         $upduser = new stdClass(); // ngambil std class untuk update datz
         $upduser->id = $user_id; // where id = user_id
+        $upduser->email      = !empty($jwt_token->user->email) ? $jwt_token->user->email : 'email@email.com' ; ; //MOODLE requires lowercase
         $upduser->firstname  = $jwt_token->user->name;
         $upduser->lastname = $lastname;
-        $upduser->password = hash_internal_user_password($jwt_token->password); // set data
+        $upduser->password = $jwt_token->password; // set data
         $DB->update_record('user', $upduser); // update data
         $id_user = $DB->get_field('user', 'id', ['username' => trim(core_text::strtolower($jwt_token->username))    ]);
         role_unassign_all(array('userid' => $id_user));
@@ -246,7 +247,7 @@ if (isset($_GET["token"])) { // jika da ge token
 
         $SESSION->wantsurl = $urltogo;
 
-        redirect('http://localhost/Moodle-starbhak/my/');
+        redirect('http://localhost/Moodle-starbhak2/my/');
         
     } else { // jika tidak ada
         // nyari user
@@ -254,9 +255,10 @@ if (isset($_GET["token"])) { // jika da ge token
         if (!empty($user_id)) {
             $upduser = new stdClass();
             $upduser->id = $user_id;
+            $upduser->email      = !empty($jwt_token->user->email) ? $jwt_token->user->email : 'email@email.com' ; //MOODLE requires lowercase
             $upduser->firstname  = $jwt_token->user->name;
             $upduser->lastname = $lastname;
-            $upduser->password = hash_internal_user_password($jwt_token->password);
+            $upduser->password = $jwt_token->password;
             $DB->update_record('user', $upduser);
             $id_user = $DB->get_field('user', 'id', ['username' => trim(core_text::strtolower($jwt_token->username))]);
             role_unassign_all(array('userid' => $id_user));
@@ -266,9 +268,9 @@ if (isset($_GET["token"])) { // jika da ge token
             // create new user
       
             $user             = new StdClass();
-            $user->email      = strtolower('email'); //MOODLE requires lowercase
+            $user->email      = !empty($jwt_token->user->email) ? $jwt_token->user->email : 'email@email.com' ;  //MOODLE requires lowercase
             $user->username   = trim(core_text::strtolower($jwt_token->username));
-            $user->password   = hash_internal_user_password($jwt_token->password);
+            $user->password   = $jwt_token->password;
             $user->lastname   = $lastname;
             $user->firstname  = $jwt_token->user->name;
             // These values are required. 
@@ -315,7 +317,7 @@ if (isset($_GET["token"])) { // jika da ge token
 
         // test the session actually works by redirecting to self
         $SESSION->wantsurl = $urltogo;
-        redirect('http://localhost/Moodle-starbhak/my/'); // ubah redirect
+        redirect('http://localhost/Moodle-starbhak2/my/'); // ubah redirect
         // echo json_encode(['succes' => true, 'code' => 200]);
         // die;
     }
